@@ -22,7 +22,6 @@ var streetMap = L.tileLayer(url, {
     accessToken: API_KEY
     });
 
-
 var lightMap = L.tileLayer(url, {
     attribution: attribution,  // where the data is coming from, acknowledgement
     tileSize: 512,
@@ -50,11 +49,9 @@ var satelliteMap = L.tileLayer(url, {
     accessToken: API_KEY
     });
    
-//earthquakes = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson";
-earthquakes = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson'
+earthquakes = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson";
 
 // pull in the JSON data file Objects, load data into variables, 
-
 d3.json(earthquakes).then((data) => {
     // console.log(data);
     
@@ -63,15 +60,11 @@ d3.json(earthquakes).then((data) => {
     
     var earthquakeMarkers = [];
     
-    
     for (var i = 0; i < featuresData.length; i++) {
-    //featuresData.map(function(row) {
-        console.log(featuresData[i]);
         var magnitude = featuresData[i].properties.mag;
         var place = featuresData[i].properties.place;
         var longitude= featuresData[i].geometry.coordinates[0];
         var latitude  = featuresData[i].geometry.coordinates[1];
-        console.log(magnitude, latitude, longitude, place)
         if (magnitude <= 1) {
             color = "Lime";
         } else if (magnitude <= 2) {
@@ -81,51 +74,35 @@ d3.json(earthquakes).then((data) => {
         } else if (magnitude <= 4) {
             color = "Orange";
         } else if (magnitude <= 5) {
-            color = "DarkOrange";
+            color = "Coral";
         } else {
-            color = "IndianRed";
+            color = "FireBrick";
         }
         
-        // create the circle, set attributes, and bind it to PopUp
         var earthquakeCircle = L.circle([latitude, longitude], {
             fillOpacity: 0.75,
             radius: magnitude*40000,
             color: color,
         });
+        // add popup option
         earthquakeCircle.bindPopup(
-        //     `<h3>${place}</h3><hr/>
-        //     <h3>magnitude: ${magnitude}</h3>
-        // `
-        );
-        
-        // add magnitude
+            `<h3>${place}</h3><hr/>
+            <h3>magnitude: ${magnitude}</h3>
+        `);
+
+        //this adds the circles to the markers
         earthquakeMarkers.push(L.circle([latitude, longitude], {
             fillOpacity: 0.75,
+            opacity: 0.75,
             radius: magnitude*40000,
-            weight: 0,
-            color: color}).bindPopup(
+            color: color,
+            weight: .02
+            }).bindPopup(
             `<h3>${place}</h3><hr/>
             <h3>magnitude: ${magnitude}</h3>`)
         );
-
-        //this adds the circles to the map
-//        earthquakeCircle.addTo(myMap);
     }
     
-    // Add the fault lines from file, need to use 'python -m http.server' to open
-    var faults_URL = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json";
-    var faults = L.layerGroup();
-
-    d3.json(faults_URL).then((data) => {
-        var geoJsonLayer1 = L.geoJSON(data, {color:'orange', weight: 2});
-        // var featuresData = data.features;   /// list of objects
-        //L.geoJSON(featuresData)
-        // geoJsonLayer1.addTo(myMap);
-        geoJsonLayer1.addTo(faults);
-    });        
-
-    
-    console.log(earthquakeMarkers);
     //create earthquake layer group
     var quakes = L.layerGroup(earthquakeMarkers);
 
@@ -134,12 +111,23 @@ d3.json(earthquakes).then((data) => {
         Satellite: satelliteMap,
         Outdoors: outdoorMap,
         Grey: lightMap};
-    
-        // layer ofr earthquakes and falt lines
+
+// Add the fault lines from file, need to use 'python -m http.server' to open
+    var faults = "../../PB2002_boundaries.json";
+
+    d3.json(faults).then((data) => {
+        var geoJsonLayer1 = L.geoJSON(data, {color:'orange'});
+        var featuresData = data.features;   /// list of objects
+        
+        geoJsonLayer1.addTo(myMap);
+    });        
+
+
+        // layer for earthquakes and falt lines
     var overlayMaps = {
-        Quakes: quakes,
-        Plates: faults
+        Quakes: quakes
     };
+
     var myMap = L.map("map", {
         center: raleighLatLng,
         zoom: 3,
@@ -149,7 +137,8 @@ d3.json(earthquakes).then((data) => {
     
     // layer control to allow toggling 
     L.control.layers(baseMaps, overlayMaps, {collapsed: false}).addTo(myMap);
-
+    
+    // Set up the legend
     var legend = L.control({ position: "bottomright" });
     legend.onAdd = function() {
         var div = L.DomUtil.create("div", "info legend");
@@ -187,26 +176,4 @@ d3.json(earthquakes).then((data) => {
     legend.addTo(myMap);
 
 
-
 });
-
-
-
-
-//var quakeLayer = L.layerGroup(earthquakeMarkers);
-
-//outdoorMap.addTo(myMap);
-
-
-
-// display base layer
-
-
-// Overlyas that may be toggles on or off
-
-
-  
-
-
-
-
