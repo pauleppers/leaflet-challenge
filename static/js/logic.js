@@ -19,7 +19,7 @@ var streetMap = L.tileLayer(url, {
     });
 
 var lightMap = L.tileLayer(url, {
-    attribution: attribution,  // where the data is coming from, acknowledgement
+    attribution: attribution, 
     tileSize: 512,
     maxZoom: 18,
     zoomOffset: -1,
@@ -28,7 +28,7 @@ var lightMap = L.tileLayer(url, {
     });
     
 var outdoorMap = L.tileLayer(url, {
-    attribution: attribution,  // where the data is coming from, acknowledgement
+    attribution: attribution, 
     tileSize: 512,
     maxZoom: 18,
     zoomOffset: -1,
@@ -37,7 +37,7 @@ var outdoorMap = L.tileLayer(url, {
     });
 
 var satelliteMap = L.tileLayer(url, {
-    attribution: attribution,  // where the data is coming from, acknowledgement
+    attribution: attribution,  
     tileSize: 512,
     maxZoom: 18,
     zoomOffset: -1,
@@ -49,24 +49,20 @@ var satelliteMap = L.tileLayer(url, {
 earthquakes = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson'
 
 
-// pull in the JSON data file Objects, load data into variables, 
-d3.json(earthquakes).then((data) => {
-    // console.log(data);
-    
-    var featuresData = data.features;   /// list of objects
-    console.log(featuresData);
-    
+// function call and wait from the JSON data file Objects at USGS, load data into variables, 
+d3.json(earthquakes).then((data) => { 
+    var featuresData = data.features;   // list of objects
     var earthquakeMarkers = [];
     
+    // loop through the JSON features 'data' and create circles for map
     for (var i = 0; i < featuresData.length; i++) {
-    //featuresData.map(function(row) {
-        console.log(featuresData[i]);
         var magnitude = featuresData[i].properties.mag;
         var place = featuresData[i].properties.place;
         var longitude= featuresData[i].geometry.coordinates[0];
         var latitude  = featuresData[i].geometry.coordinates[1];
-        console.log(magnitude, latitude, longitude, place)
-        if (magnitude <= 1) {
+      
+        // assigning colors to circles
+        if (magnitude <= 1) {    
             color = "Lime";
         } else if (magnitude <= 2) {
             color = "GreenYellow";
@@ -80,16 +76,7 @@ d3.json(earthquakes).then((data) => {
             color = "IndianRed";
         }
         
-
-        // var earthquakeCircle = L.circle([latitude, longitude], {
-        //     // fillOpacity: 0.75,
-        //     // radius: magnitude*35000,
-        //     // color: color,
-        // });
-        // earthquakeCircle.bindPopup(
-        // );
-        
-        // create the circle, set attributes, and bind it to PopUp
+        // create the circle marker array, setting attributes, and bind it to PopUp
         earthquakeMarkers.push(L.circle([latitude, longitude], {
             fillOpacity: 0.75,
             radius: magnitude*35000,
@@ -99,19 +86,18 @@ d3.json(earthquakes).then((data) => {
             `<h3>${place}</h3><hr/>
             <h3>magnitude: ${magnitude}</h3>`)
         );
-    }
+    } // end of for loop
     
     // Add the fault lines from Github, added wait
     var faults_URL = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json";
     var faults = L.layerGroup();
 
-
+    // function call and wait from the JSON data file Objects aGitgub fault line boundaries
     d3.json(faults_URL).then((data) => {
         var geoJsonLayer1 = L.geoJSON(data, {color:'orange', weight: 2});
         geoJsonLayer1.addTo(faults);
     });        
 
-    console.log(earthquakeMarkers);
     //create earthquake layer group
     var quakes = L.layerGroup(earthquakeMarkers);
 
@@ -121,7 +107,7 @@ d3.json(earthquakes).then((data) => {
         Outdoors: outdoorMap,
         Grey: lightMap};
     
-        // layer ofr earthquakes and falt lines
+    // layer for earthquakes and falt lines
     var overlayMaps = {
         Earthquakes: quakes,
         'Fault Lines': faults
